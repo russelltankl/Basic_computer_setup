@@ -179,6 +179,11 @@ git clone https://github.com/tensorflow/tensorflow.git
 cd tensorflow
 git pull
 git checkout r1.8
+```
+
+#### Python versions
+If you want to build in 2.7 or 3.5, safest bet is to activate a virtualenv with python specified. After you activated virtualenv, then navigate into tensorflow folder to configure tensorflow. (Could also do this without virtualenv I think)
+```
 ./configure
 ```
 
@@ -214,11 +219,18 @@ If you want to configure Tensorflow witn TensorRT, you'll need to install that f
 
 ### Build Tensorflow using bazel
 This will take awhile so go get some sleep after typing this. NOTE: Make sure to upgrade pip to the latest version, if not this will fail at the last step.
+
+#### CPU
 ```
 bazel build --config=opt //tensorflow/tools/pip_package:build_pip_package
 ```
 
-After the long installation and hopefully it was successful,
+#### GPU
+```
+bazel build --config=opt --config=cuda //tensorflow/tools/pip_package:build_pip_package
+```
+
+After the long installation and hopefully it was successful. Run the build_pip_pakage.sh shell file to generate .whl based on what python version you defined at the start of the configuration.
 ```
 bazel-bin/tensorflow/tools/pip_package/build_pip_package tensorflow_pkg
 cd tensorflow_pkg
@@ -228,3 +240,28 @@ source tf_1.8.0_cuda9.2/bin/activate
 pip install tensorflow*.whl
 ```
 
+### Misc
+Bugs I encountered while installing Tensorflow.
+
+#### Python2.7
+- Import Error: no module named enum
+
+```
+pip install enum34
+```
+
+- Import Error: no module named mock
+
+```
+pip install mock
+```
+
+- tensorflow/core/kernels/tile_functor_gpu.cu.pic.o' was not created [Source](https://github.com/tensorflow/tensorflow/issues/3786#issuecomment-239646852)
+
+```
+edit tensorflow/third_party/gpus/crosstool/CROSSTOL and add:
+cxx_builtin_include_directory: "path/to/cuda/include" (note: symlink did not work, use actual path)
+```
+
+### Sources
+- [Building Tensorflow](https://wagonhelm.github.io/articles/2018-02/Installing-GPU-Supported-Tensorflow)
